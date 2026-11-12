@@ -21,7 +21,6 @@ def inicio():
     }
 
 @app.get("/chat")
-@app.get("/chat")
 def conversar(mensagem: str):
     resposta = requests.post(
         "http://localhost:11434/api/chat",
