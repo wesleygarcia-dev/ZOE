@@ -8,7 +8,7 @@ app = FastAPI(
 )
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODELO = "qwen3.5:4b"
+MODELO = "qwen2.5:1.5b"
 
 @app.get("/")
 def inicio():
