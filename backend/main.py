@@ -18,12 +18,19 @@ def inicio():
     }
 
 @app.get("/chat")
+@app.get("/chat")
 def conversar(mensagem: str):
     resposta = requests.post(
-        OLLAMA_URL,
+        "http://localhost:11434/api/chat",
         json={
             "model": MODELO,
-            "prompt": mensagem,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": mensagem
+                }
+            ],
+            "think": False,
             "stream": False,
             "options": {
                 "temperature": 0.7,
@@ -32,6 +39,8 @@ def conversar(mensagem: str):
         }
     )
 
+    dados = resposta.json()
+
     return {
-        "resposta": resposta.json()["response"]
+        "resposta": dados["message"]["content"]
     }
