@@ -14,7 +14,10 @@ MODELO = "qwen2.5:1.5b"
 def inicio():
     return {
         "status": "online",
-        "mensagem": "ZOE está funcionando!"
+        "nome": "ZOE",
+        "versao": "1.1.0",
+        "modelo": MODELO,
+        "mensagem": "ZOE está funcionando corretamente!"
     }
 
 @app.get("/chat")
