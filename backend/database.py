@@ -6,8 +6,14 @@ CAMINHO_BANCO = Path(__file__).resolve().parent / "zoe.db"
 
 
 def conectar():
-    conexao = sqlite3.connect(CAMINHO_BANCO)
+    conexao = sqlite3.connect(
+        CAMINHO_BANCO,
+        timeout=10
+    )
+
     conexao.row_factory = sqlite3.Row
+    conexao.execute("PRAGMA busy_timeout = 10000")
+
     return conexao
 
 
@@ -33,7 +39,7 @@ def criar_tabelas():
         """)
 
 
-# Salvar histórico de conversas
+# Salvar conversa
 def salvar_conversa(mensagem, resposta):
     with conectar() as conexao:
         conexao.execute(
@@ -45,12 +51,14 @@ def salvar_conversa(mensagem, resposta):
         )
 
 
-# Buscar histórico de conversas
+# Buscar histórico
 def buscar_historico(limite=10):
+    limite = max(1, min(int(limite), 100))
+
     with conectar() as conexao:
         cursor = conexao.execute(
             """
-            SELECT mensagem, resposta, data_hora
+            SELECT id, mensagem, resposta, data_hora
             FROM conversas
             ORDER BY id DESC
             LIMIT ?
@@ -61,10 +69,15 @@ def buscar_historico(limite=10):
         return [dict(registro) for registro in cursor.fetchall()]
 
 
-# Salvar memória permanente
+# Salvar memória
 def salvar_memoria(informacao):
+    informacao = informacao.strip()
+
+    if not informacao:
+        return False
+
     with conectar() as conexao:
-        conexao.execute(
+        cursor = conexao.execute(
             """
             INSERT OR IGNORE INTO memorias (informacao)
             VALUES (?)
@@ -72,8 +85,10 @@ def salvar_memoria(informacao):
             (informacao,)
         )
 
+        return cursor.rowcount > 0
 
-# Buscar memórias permanentes
+
+# Buscar memórias
 def buscar_memorias():
     with conectar() as conexao:
         cursor = conexao.execute(
@@ -87,7 +102,27 @@ def buscar_memorias():
         return [dict(registro) for registro in cursor.fetchall()]
 
 
-# Excluir uma memória
+# Atualizar memória
+def atualizar_memoria(memoria_id, informacao):
+    informacao = informacao.strip()
+
+    if not informacao:
+        return False
+
+    with conectar() as conexao:
+        cursor = conexao.execute(
+            """
+            UPDATE memorias
+            SET informacao = ?
+            WHERE id = ?
+            """,
+            (informacao, memoria_id)
+        )
+
+        return cursor.rowcount > 0
+
+
+# Excluir memória
 def excluir_memoria(memoria_id):
     with conectar() as conexao:
         cursor = conexao.execute(
